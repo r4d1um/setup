@@ -73,6 +73,18 @@
       "repo": "r4d1um/setup",
       "version": "1.1.0",
       "sha256": "90a2ed13d8f2a0125c1577b719c5110c5361ce14e89e969b9c35160a88de7d6c"
+    },
+    {
+      "name": "xtensa-esp32-elf",
+      "repo": "r4d1um/setup",
+      "version": "8.4.0-esp-2021r2-patch5-r1",
+      "sha256": "ff25703784d08a5ff6f13e25766b09611a319bf484ecf1e6a5ef68b7ac0f5f0e"
+    },
+    {
+      "name": "xtensa-lx106-elf",
+      "repo": "r4d1um/setup",
+      "version": "3.1.0-gcc10.3-e5f9fec-r1",
+      "sha256": "5939440481c496be06f3b6f1c72a748f01419ab0d3d5912dad7847eb74d1c5e6"
     }
   ]
 }
