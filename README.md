@@ -18,6 +18,9 @@ curl -fsSL https://raw.githubusercontent.com/r4d1um/setup/v1.0.0/bootstrap.sh \
   (REST; `gh release download` uses GraphQL, which cloud sessions block)
 - commands are linked into `~/.local/bin`, toolchains live in `~/.local/share/r4setup/<name>/<version>`;
   in Actions their `bin/` directories also go to `$GITHUB_PATH`
+- **Python packages:** a toolchain with a `python` entry in its `r4setup.json` gets a
+  `r4setup-<name>.pth` in the user site of each listed Python (`~/.local/lib/python3.X/site-packages`,
+  or under `$PYTHONUSERBASE`), so its packages import without `pip install`
 
 ## Toolchains
 
@@ -33,6 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/r4d1um/setup/v1.0.0/bootstrap.sh \
 | `arm-linux-gnueabihf` | cross GCC 12.5, glibc 2.36, **ARMv6** + VFP hard float: Pi Zero / Pi 1 (and every later Pi, 32-bit) | public |
 | `i686-linux-gnu` | cross GCC 12.5, glibc 2.36: the netbook (32-bit Debian 12) | public |
 | `fakes` | shared test fakes, see below | public |
+| `py-console` | pyte + wcwidth, Pillow (CPython 3.11–3.13 in one tree) and shellcheck 0.11, all from PyPI; `import pyte` works without PYTHONPATH (a `.pth` in the user site) | public |
 | `r4setup` | the installer itself | public |
 
 `r4setup list -manifest manifest.json` shows versions and what's installed.

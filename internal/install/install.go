@@ -9,6 +9,11 @@
 // path: directories whose commands get linked (and added to GITHUB_PATH in Actions).
 // links: symlinks <home>/<key> -> <toolchain>/<value>, so several toolchains can
 // fill one shared tree (arduino-cli's data directory).
+// python: a directory of Python packages; for each listed version a
+// <user site>/r4setup-<name>.pth points that Python at it, so `import pyte` just works
+// (the user site is ~/.local/lib/pythonX.Y/site-packages, or under $PYTHONUSERBASE).
+//
+//	{"path": ["bin"], "python": {"dir": "python", "versions": ["3.11", "3.12"]}}
 package install
 
 import (
@@ -19,6 +24,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall"
 
@@ -33,14 +39,21 @@ const (
 )
 
 type Layout struct {
-	Path  []string          `json:"path,omitempty"`
-	Links map[string]string `json:"links,omitempty"`
+	Path   []string          `json:"path,omitempty"`
+	Links  map[string]string `json:"links,omitempty"`
+	Python *PythonLayout     `json:"python,omitempty"`
+}
+
+type PythonLayout struct {
+	Dir      string   `json:"dir"`
+	Versions []string `json:"versions"`
 }
 
 type Installer struct {
 	Home       string // toolchains go to <Home>/<name>/<version>
 	BinDir     string // commands are linked here; "" links nothing
 	GitHubPath string // Actions' $GITHUB_PATH file; "" outside Actions
+	PythonBase string // Python's user base (~/.local): .pth files go to its site-packages; "" writes none
 	Source     fetch.Source
 	Log        func(format string, args ...any)
 }
@@ -203,7 +216,39 @@ func (in *Installer) activate(t manifest.Toolchain) error {
 			return err
 		}
 	}
+	if l.Python != nil && in.PythonBase != "" {
+		if !relInside(l.Python.Dir) {
+			return fmt.Errorf("python dir %q leaves the toolchain", l.Python.Dir)
+		}
+		for _, v := range l.Python.Versions {
+			if !pyVersionRe.MatchString(v) {
+				return fmt.Errorf("bad python version %q", v)
+			}
+			site := filepath.Join(in.PythonBase, "lib", "python"+v, "site-packages")
+			if err := writeFile(filepath.Join(site, "r4setup-"+t.Name+".pth"), filepath.Join(dir, l.Python.Dir)+"\n"); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
+}
+
+var pyVersionRe = regexp.MustCompile(`^3\.[0-9]+$`)
+
+// writeFile writes content under a temporary name and renames it into place
+// (unchanged files are left alone).
+func writeFile(dst, content string) error {
+	if b, err := os.ReadFile(dst); err == nil && string(b) == content {
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		return err
+	}
+	tmp := dst + ".r4setup-tmp"
+	if err := os.WriteFile(tmp, []byte(content), 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tmp, dst)
 }
 
 func (in *Installer) linkCommands(bindir string) error {

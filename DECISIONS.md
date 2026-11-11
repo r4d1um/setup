@@ -25,3 +25,9 @@ with Espressif chips only; when in doubt, private. Same for the ESP32 core later
 
 **2026-11-11 — The release workflow queues (cancel-in-progress: false).** A newer push would
 otherwise kill an hour-long cross build that has to be redone anyway.
+
+**2026-11-11 — Python tools from PyPI wheels, unpacked by r4build, found through a .pth.**
+`r4build wheels` downloads pinned binary wheels (no pip install, no venv) and unpacks them into one
+tree; Pillow's extension modules carry the Python version in their names, so one archive serves
+CPython 3.11 (the netbook's) to 3.13. r4setup writes a `.pth` into each listed Python's user site
+instead of asking projects to set PYTHONPATH, which doesn't survive between shell calls.

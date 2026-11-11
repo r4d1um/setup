@@ -160,3 +160,32 @@ func TestRefusesUnknownUnreleasedAndForeignCommands(t *testing.T) {
 		t.Fatal("overwrote a command that wasn't ours")
 	}
 }
+
+func TestPythonPathFiles(t *testing.T) {
+	arc, sum := archive(t, map[string]string{
+		"python/pyte/__init__.py": "",
+		LayoutFile:                `{"path":["bin"],"python":{"dir":"python","versions":["3.11","3.12"]}}`,
+	})
+	bad, badSum := archive(t, map[string]string{LayoutFile: `{"python":{"dir":"../x","versions":["3.11"]}}`})
+	src := &fakeSource{assets: map[string][]byte{"py-console-1": arc, "evil-1": bad}}
+	m := &manifest.Manifest{Schema: 1, Toolchains: []manifest.Toolchain{
+		{Name: "py-console", Repo: "r4d1um/setup", Version: "1", SHA256: sum},
+		{Name: "evil", Repo: "r4d1um/setup", Version: "1", SHA256: badSum},
+	}}
+	home := t.TempDir()
+	in := &Installer{Home: filepath.Join(home, "share"), PythonBase: filepath.Join(home, "local"), Source: src}
+	for i := 0; i < 2; i++ {
+		if err := in.Install(context.Background(), m, []string{"py-console"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, v := range []string{"3.11", "3.12"} {
+		b, err := os.ReadFile(filepath.Join(home, "local/lib/python"+v+"/site-packages/r4setup-py-console.pth"))
+		if err != nil || strings.TrimSpace(string(b)) != filepath.Join(in.Home, "py-console", "1", "python") {
+			t.Fatalf("%s: %q %v", v, b, err)
+		}
+	}
+	if err := in.Install(context.Background(), m, []string{"evil"}); err == nil {
+		t.Fatal("python dir outside the toolchain accepted")
+	}
+}

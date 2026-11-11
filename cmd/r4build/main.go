@@ -2,6 +2,7 @@
 //
 //	r4build plan   -repo r4d1um/setup -dir toolchains     # JSON list of toolchains whose release is missing
 //	r4build debs   -root DIR pkg=version...              # Ubuntu packages, unpacked relocatable into DIR
+//	r4build wheels -root DIR -python 3.11,3.12 pkg==version...  # PyPI wheels, unpacked into DIR/python, DIR/bin
 //	r4build bundle -root DIR                             # copy host-only libraries in, set $ORIGIN RUNPATHs
 //	r4build pack   -name N -version V -root DIR -out OUT # OUT/<name>-<version>-linux-amd64.tar.gz (+ .sha256)
 //	r4build unpack -asset FILE -dir DIR                  # for the smoke tests
@@ -24,11 +25,12 @@ import (
 	"github.com/r4d1um/setup/internal/install"
 	"github.com/r4d1um/setup/internal/manifest"
 	"github.com/r4d1um/setup/internal/tgz"
+	"github.com/r4d1um/setup/internal/wheel"
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		fail(fmt.Errorf("usage: r4build plan|debs|bundle|pack|unpack (see cmd/r4build/main.go)"))
+		fail(fmt.Errorf("usage: r4build plan|debs|wheels|bundle|pack|unpack (see cmd/r4build/main.go)"))
 	}
 	fs := flag.NewFlagSet(os.Args[1], flag.ExitOnError)
 	var err error
@@ -42,6 +44,11 @@ func main() {
 		root := fs.String("root", "", "target directory")
 		fs.Parse(os.Args[2:])
 		err = debs(*root, fs.Args())
+	case "wheels":
+		root := fs.String("root", "", "target directory")
+		pythons := fs.String("python", "3.11", "comma-separated Python versions to fetch binary wheels for")
+		fs.Parse(os.Args[2:])
+		err = wheels(*root, strings.Split(*pythons, ","), fs.Args())
 	case "bundle":
 		root := fs.String("root", "", "toolchain tree")
 		fs.Parse(os.Args[2:])
@@ -197,6 +204,79 @@ func debs(root string, pkgs []string) error {
 		}
 	}
 	return os.WriteFile(filepath.Join(root, "SOURCES.txt"), sources.Bytes(), 0o644)
+}
+
+// wheels downloads binary wheels (exact versions, no dependencies: list them all) from PyPI
+// for every Python version and unpacks them into root with internal/wheel; a package with
+// C extensions brings one module per version, which can live side by side. The dist-info
+// folders keep each package's licence; SOURCES.txt gets a PyPI link per package.
+func wheels(root string, pythons, pkgs []string) error {
+	if root == "" || len(pkgs) == 0 {
+		return fmt.Errorf("usage: r4build wheels -root DIR -python 3.11,3.12 pkg==version...")
+	}
+	for _, p := range pkgs {
+		if !strings.Contains(p, "==") {
+			return fmt.Errorf("%s: pin an exact version (pkg==1.2.3)", p)
+		}
+	}
+	tmp, err := os.MkdirTemp("", "r4build-wheels-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmp)
+	seen := map[string]bool{}
+	var files []string
+	for _, py := range pythons {
+		dir := filepath.Join(tmp, py)
+		args := []string{"-m", "pip", "download", "-q", "--disable-pip-version-check", "--no-deps",
+			"--only-binary=:all:", "--python-version", py, "--implementation", "cp",
+			"--platform", "manylinux_2_28_x86_64", "--platform", "manylinux2014_x86_64",
+			"--platform", "manylinux1_x86_64", "-d", dir}
+		cmd := exec.Command("python3", append(args, pkgs...)...)
+		cmd.Stdout, cmd.Stderr = os.Stderr, os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("pip download for Python %s: %w", py, err)
+		}
+		got, _ := filepath.Glob(filepath.Join(dir, "*.whl"))
+		if len(got) != len(pkgs) {
+			return fmt.Errorf("Python %s: asked for %d packages, got %d wheels", py, len(pkgs), len(got))
+		}
+		for _, f := range got {
+			if !seen[filepath.Base(f)] { // a pure wheel is the same file for every version
+				seen[filepath.Base(f)] = true
+				files = append(files, f)
+			}
+		}
+	}
+	sort.Strings(files)
+	versions := map[string]string{}
+	for _, f := range files {
+		info, err := wheel.ParseName(f)
+		if err != nil {
+			return err
+		}
+		versions[info.Name] = info.Version
+		logf("unpacking %s", filepath.Base(f))
+		if err := wheel.Merge(root, f); err != nil {
+			return err
+		}
+	}
+	var names []string
+	for n := range versions {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+	var src bytes.Buffer
+	if old, err := os.ReadFile(filepath.Join(root, "SOURCES.txt")); err == nil {
+		src.Write(old)
+		src.WriteString("\n")
+	}
+	fmt.Fprintf(&src, "Unpacked from these PyPI wheels (Python %s); source and licence at the links,\n", strings.Join(pythons, ", "))
+	src.WriteString("the licence files also in python/<name>-<version>.dist-info/.\n\n")
+	for _, n := range names {
+		fmt.Fprintf(&src, "%s %s  https://pypi.org/project/%s/%s/\n", n, versions[n], strings.ReplaceAll(n, "_", "-"), versions[n])
+	}
+	return os.WriteFile(filepath.Join(root, "SOURCES.txt"), src.Bytes(), 0o644)
 }
 
 func pack(name, version, root, out string) error {

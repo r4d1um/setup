@@ -10,8 +10,8 @@ first; decisions and their reasons are in DECISIONS.md.
   (`schema` bumps otherwise). Written by `r4setup pin` / the toolchains workflow, not by hand.
 - `cmd/r4setup` — installer (install/list/prefix/pin); `cmd/r4build` — build helper used by
   `toolchains/*/build.sh`; `cmd/fake-mqtt-broker`
-- `internal/{manifest,fetch,tgz,install,elfdeps,fakebroker}` — logic, each package tested;
-  I/O (HTTP, gh, apt, patchelf) only in fetch / r4build / elfdeps
+- `internal/{manifest,fetch,tgz,install,elfdeps,fakebroker,wheel}` — logic, each package tested;
+  I/O (HTTP, gh, apt, pip download, patchelf) only in fetch / r4build / elfdeps
 - `toolchains/<name>/` — `VERSION`, `build.sh`, `test.sh`, optional `TIMEOUT`, `defconfig`
 - `fakes/python/r4fakes` — shared Python fakes
 

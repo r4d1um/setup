@@ -172,6 +172,9 @@ func installer() *install.Installer {
 	if in.BinDir == "" {
 		in.BinDir = filepath.Join(home, ".local", "bin")
 	}
+	if in.PythonBase = os.Getenv("PYTHONUSERBASE"); in.PythonBase == "" {
+		in.PythonBase = filepath.Join(home, ".local")
+	}
 	if os.Getenv("GITHUB_ACTIONS") == "true" {
 		in.GitHubPath = os.Getenv("GITHUB_PATH")
 	}
