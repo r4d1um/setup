@@ -62,7 +62,8 @@ Repo-specific fakes stay in each repo's `tests/`.
 2. Push. The [toolchains workflow](.github/workflows/toolchains.yml) builds only toolchains
    whose release `<name>-<version>` doesn't exist yet, smoke-tests the packed archive,
    creates the release and pins the checksum in `manifest.json` (and `bootstrap.sh` for `r4setup`).
-3. Tag a new `vX.Y.Z` and raise the pin in the projects' `tools/session-setup.sh`.
+3. Raise [`VERSION`](VERSION): the tag workflow tags `v<VERSION>`. Then raise the pin in the
+   projects' `tools/session-setup.sh`.
 
 Private toolchains: same layout in setup-private; after its release,
 `go run ./cmd/r4setup pin -manifest manifest.json -name N -repo r4d1um/setup-private -version V -sha S -private`.

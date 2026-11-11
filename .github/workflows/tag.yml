@@ -1,0 +1,25 @@
+name: tag
+
+# VERSION is this repo's version: raising it tags the commit "v<VERSION>", the ref the
+# projects' tools/session-setup.sh pin (cloud sessions may not push tags themselves).
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Tag v$(cat VERSION) unless it exists
+        run: |
+          tag="v$(cat VERSION)"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "$tag exists already"; exit 0
+          fi
+          git tag "$tag" && git push -q origin "$tag" && echo "tagged $tag"

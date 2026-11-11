@@ -26,7 +26,8 @@ first; decisions and their reasons are in DECISIONS.md.
 - Actions: Node 24 actions (checkout@v7, setup-go@v7, upload-artifact@v7, download-artifact@v8),
   `timeout-minutes` on every job, paths filters. The build workflow queues instead of
   cancelling (an hour of cross-GCC work would be lost).
-- After a release: tag `vX.Y.Z` here, raise `R4SETUP_REF` in the projects' `tools/session-setup.sh`.
+- After a release: raise `VERSION` here (the tag workflow creates `v<VERSION>`; sessions can't push tags),
+  then raise `R4SETUP_REF` in the projects' `tools/session-setup.sh`.
 
 ## Testing here
 
