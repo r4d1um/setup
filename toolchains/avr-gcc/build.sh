@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # avr-gcc 7.3 + avr-libc + binutils, avrdude and simavr from Ubuntu 24.04, relocatable.
 # A new package version means a new VERSION (7.3.0-r2, ...).
 source "$(dirname "$0")/../common.sh"

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // r4setup installs r4d1um's prebuilt toolchains (see manifest.json) and pins new releases.
 //
 //	r4setup install -manifest <path|url> <toolchain>...

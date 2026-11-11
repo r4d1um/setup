@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Stands in for esptool in the tests: prints what the real one prints for the
 commands the server uses. FAKE_ESPTOOL_FAIL=connect makes it fail like a board
 that doesn't answer, FAKE_ESPTOOL_FAIL=hang never ends, FAKE_ESPTOOL_FAIL=nostub like Debian's esptool package without its stub

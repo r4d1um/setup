@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Package elfdeps makes a toolchain tree self-contained: every x86-64 ELF file
 // gets a RUNPATH ($ORIGIN-relative) to the libraries it needs, and libraries
 // that only exist on the build host are copied into <root>/lib/host.

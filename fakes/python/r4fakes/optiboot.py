@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Stands in for an Arduino Uno's bootloader (optiboot, STK500 v1) on a pseudo-terminal, so the
 tests run the real avrdude against it: it answers the commands avrdude's "arduino" programmer
 sends and keeps what it is given in `flash` (byte address -> value).

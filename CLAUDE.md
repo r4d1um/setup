@@ -10,7 +10,7 @@ first; decisions and their reasons are in DECISIONS.md.
   (`schema` bumps otherwise). Written by `r4setup pin` / the toolchains workflow, not by hand.
 - `cmd/r4setup` — installer (install/list/prefix/pin); `cmd/r4build` — build helper used by
   `toolchains/*/build.sh`; `cmd/fake-mqtt-broker`
-- `internal/{manifest,fetch,tgz,install,elfdeps,fakebroker,wheel}` — logic, each package tested;
+- `internal/{manifest,fetch,tgz,install,elfdeps,fakebroker,wheel,sources}` — logic, each package tested;
   I/O (HTTP, gh, apt, pip download, patchelf) only in fetch / r4build / elfdeps
 - `toolchains/<name>/` — `VERSION`, `build.sh`, `test.sh`, optional `TIMEOUT`, `defconfig`
 - `fakes/python/r4fakes` — shared Python fakes
@@ -19,6 +19,8 @@ first; decisions and their reasons are in DECISIONS.md.
 
 - This repo is **public**: nothing with an unclear licence, vendor blobs or anything
   sensitive — that goes to r4d1um/setup-private (when in doubt: private).
+- Every archive needs `SOURCES.txt` + licence texts (see README); new Arduino tools need a rule
+  in `internal/sources`. Own code is MIT: new .go/.sh/.py files start with an SPDX line.
 - A toolchain change = new `VERSION` (`-rN` for a repack); the workflow then builds only that one.
 - Shell only as short glue (`toolchains/common.sh`); branching/JSON/>50 lines go to Go.
 - No third-party Go modules: sessions can't reach proxy.golang.org (stdlib only, gzip not zstd).

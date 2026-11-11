@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Cahute (p7, p7os, CaS, ...) for the Casio fx-9860G, built from source; libusb goes into the
 # tree. p7screen (screen streaming, needs SDL2 and a desktop) is left out.
 source "$(dirname "$0")/../common.sh"
@@ -13,8 +14,8 @@ DESTDIR=$src/stage cmake --install "$src/build" --strip
 cp -a "$src/stage/usr/." "$root/"
 rm -rf "$root/bin/p7screen" "$root/lib/udev" "$root/lib/pkgconfig" "$root/include" "$root/share/man"
 mkdir -p "$root/share/doc/cahute"
-cp "$src/cahute/LICENSE"* "$root/share/doc/cahute/" 2>/dev/null || true
+cp "$src/cahute/LICENSE"* "$root/share/doc/cahute/"   # no licence file: stop, don't ship without
 printf 'Cahute %s, source: https://gitlab.com/cahuteproject/cahute/-/tree/%s\n' "${version%-r*}" "${version%-r*}" >"$root/SOURCES.txt"
-r4build bundle -root "$root"
+r4build bundle -root "$root"   # also adds libusb & co. (LGPL) to SOURCES.txt
 layout '{"path":["bin"]}'
 r4build pack -name "$name" -version "$version" -root "$root" -out "$out"

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Package manifest reads and writes manifest.json: which toolchain lives in
 // which repo, at which version, and the SHA256 its release asset must have.
 //

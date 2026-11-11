@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Shared test fakes: fake-esptool, fake-optiboot (Python, r4fakes package) and fake-mqtt-broker (Go).
 source "$(dirname "$0")/../common.sh"
 out=${1:?usage: build.sh OUTDIR}

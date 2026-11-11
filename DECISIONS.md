@@ -31,3 +31,12 @@ otherwise kill an hour-long cross build that has to be redone anyway.
 tree; Pillow's extension modules carry the Python version in their names, so one archive serves
 CPython 3.11 (the netbook's) to 3.13. r4setup writes a `.pth` into each listed Python's user site
 instead of asking projects to set PYTHONPATH, which doesn't survive between shell calls.
+
+**2026-11-11 — MIT for this repo's own code; every archive carries its sources and licences.**
+The code here is MIT (`LICENSE`, SPDX line per file). Redistributing GPL/LGPL binaries needs
+the source pointer and the licence text next to them, so `r4build bundle` records the Ubuntu
+package and copyright file of every library it copies into `lib/host`, and
+`r4build arduino-sources` does the same for the Arduino CLI, its tools and the AVR core from
+a fixed table (`internal/sources`) — an unknown tool fails the build rather than shipping
+without. avr-gcc, arm-none-eabi, arduino-cli, arduino-avr and cahute were rebuilt for it; the
+cross GCCs already had full sources and `share/licenses/` and bundle no host libraries.

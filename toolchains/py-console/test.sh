@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Every Python the tree is built for (that this host has) imports the packages and draws
 # a terminal screen through pyte into a PNG; pyflakes and shellcheck each find a real mistake.
 source "$(dirname "$0")/../common.sh"

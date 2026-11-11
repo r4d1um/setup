@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # The installer itself; bootstrap.sh fetches this archive (version + sha256 pinned in it).
 source "$(dirname "$0")/../common.sh"
 out=${1:?usage: build.sh OUTDIR}

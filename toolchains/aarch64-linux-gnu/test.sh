@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # hello world in C and C++ for the target; nothing may need a glibc newer than 2.36
 source "$(dirname "$0")/../common.sh"
 dir=${1:?usage: test.sh DIR}

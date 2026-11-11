@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Shared test fakes from r4d1um/setup (toolchain "fakes").
 
 - r4fakes.optiboot.FakeOptiboot: Arduino bootloader (STK500 v1) on a pty, for the real avrdude

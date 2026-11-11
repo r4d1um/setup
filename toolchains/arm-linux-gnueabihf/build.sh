@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Cross GCC for Debian 12 / Pi OS bookworm targets, built with crosstool-ng from defconfig
 # (GCC 12, glibc 2.36, so programs run on those systems). The source tarballs are attached
 # to the release as <name>-<version>-sources.tar (GPL).
