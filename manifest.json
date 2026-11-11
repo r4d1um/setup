@@ -65,8 +65,8 @@
     {
       "name": "py-console",
       "repo": "r4d1um/setup",
-      "version": "1.0.0",
-      "sha256": "2046b70aa0d96b099e4f6f9894cdaac4b04838b8a83552229d0f99d5a8af4756"
+      "version": "1.1.0",
+      "sha256": "5a17c225ff63628ae9b7f195c4704a4eb3cc3932ba45301d7979c0cf22ada89a"
     },
     {
       "name": "r4setup",
