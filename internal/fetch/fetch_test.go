@@ -51,19 +51,37 @@ func TestPrivateNeedsGh(t *testing.T) {
 	}
 }
 
-func TestPrivateUsesGhReleaseDownload(t *testing.T) {
+func TestPrivateUsesGhAPI(t *testing.T) {
 	dir := t.TempDir()
 	log := filepath.Join(dir, "args")
 	gh := filepath.Join(dir, "gh")
-	os.WriteFile(gh, []byte("#!/bin/sh\necho \"$@\" > "+log+"\nwhile [ $# -gt 0 ]; do [ \"$1\" = -O ] && echo data > \"$2\"; shift; done\n"), 0o755)
+	// fake gh: answers the release lookup with an asset id, the asset request with its bytes
+	os.WriteFile(gh, []byte(`#!/bin/sh
+echo "$@" >> `+log+`
+case "$*" in
+  *releases/tags/*) echo 4711 ;;
+  *releases/assets/4711*) printf data ;;
+  *) exit 1 ;;
+esac
+`), 0o755)
 	dst := filepath.Join(dir, "asset")
 	tc := manifest.Toolchain{Name: "arduino-esp8266", Repo: "r4d1um/setup-private", Version: "3.1.2-r1", Private: true}
 	if err := (GitHub{GH: gh}).Download(context.Background(), tc, dst); err != nil {
 		t.Fatal(err)
 	}
+	if b, _ := os.ReadFile(dst); string(b) != "data" {
+		t.Fatalf("asset %q", b)
+	}
 	args, _ := os.ReadFile(log)
-	want := "release download arduino-esp8266-3.1.2-r1 -R r4d1um/setup-private -p arduino-esp8266-3.1.2-r1-linux-amd64.tar.gz -O " + dst + " --clobber"
-	if strings.TrimSpace(string(args)) != want {
-		t.Fatalf("gh %s", args)
+	want := `api repos/r4d1um/setup-private/releases/tags/arduino-esp8266-3.1.2-r1 -q .assets[] | select(.name == "arduino-esp8266-3.1.2-r1-linux-amd64.tar.gz") | .id
+api -H Accept: application/octet-stream repos/r4d1um/setup-private/releases/assets/4711
+`
+	if string(args) != want {
+		t.Fatalf("gh calls:\n%s", args)
+	}
+	tc.Version = "9"
+	os.WriteFile(gh, []byte("#!/bin/sh\nexit 0\n"), 0o755) // no such asset: empty answer
+	if err := (GitHub{GH: gh}).Download(context.Background(), tc, dst); err == nil {
+		t.Fatal("missing asset not reported")
 	}
 }

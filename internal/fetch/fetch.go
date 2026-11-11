@@ -38,10 +38,25 @@ func (g GitHub) Download(ctx context.Context, t manifest.Toolchain, dst string) 
 		if _, err := exec.LookPath(gh); err != nil {
 			return fmt.Errorf("%s is in the private repo %s: it needs the gh CLI, logged in (gh auth login) or with GH_TOKEN", t.Name, t.Repo)
 		}
-		cmd := exec.CommandContext(ctx, gh, "release", "download", t.Tag(), "-R", t.Repo, "-p", t.Asset(), "-O", dst, "--clobber")
-		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("gh release download %s from %s: %w", t.Tag(), t.Repo, err)
+		// REST only (gh api), not "gh release download": that one uses GraphQL, which cloud sessions block
+		q := fmt.Sprintf(`.assets[] | select(.name == "%s") | .id`, t.Asset())
+		out, err := exec.CommandContext(ctx, gh, "api", "repos/"+t.Repo+"/releases/tags/"+t.Tag(), "-q", q).Output()
+		id := strings.TrimSpace(string(out))
+		if err != nil || id == "" {
+			return fmt.Errorf("release %s of %s (or its asset %s) not found via gh api: %v", t.Tag(), t.Repo, t.Asset(), err)
+		}
+		f, err := os.Create(dst)
+		if err != nil {
+			return err
+		}
+		cmd := exec.CommandContext(ctx, gh, "api", "-H", "Accept: application/octet-stream", "repos/"+t.Repo+"/releases/assets/"+id)
+		cmd.Stdout, cmd.Stderr = f, os.Stderr
+		err = cmd.Run()
+		if cerr := f.Close(); err == nil {
+			err = cerr
+		}
+		if err != nil {
+			return fmt.Errorf("downloading %s from %s: %w", t.Asset(), t.Repo, err)
 		}
 		return nil
 	}

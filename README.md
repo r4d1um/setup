@@ -14,7 +14,8 @@ curl -fsSL https://raw.githubusercontent.com/r4d1um/setup/v1.0.0/bootstrap.sh \
 - **checksums:** every archive's SHA256 is pinned in [`manifest.json`](manifest.json), the
   installer's own in [`bootstrap.sh`](bootstrap.sh); a mismatch installs nothing
 - **public or private:** `manifest.json` knows which repo holds each toolchain; private ones
-  (in [r4d1um/setup-private](https://github.com/r4d1um/setup-private)) are downloaded with `gh`
+  (in [r4d1um/setup-private](https://github.com/r4d1um/setup-private)) are downloaded with `gh api`
+  (REST; `gh release download` uses GraphQL, which cloud sessions block)
 - commands are linked into `~/.local/bin`, toolchains live in `~/.local/share/r4setup/<name>/<version>`;
   in Actions their `bin/` directories also go to `$GITHUB_PATH`
 
