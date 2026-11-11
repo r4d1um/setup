@@ -63,10 +63,16 @@
       "sha256": "d0cab3c3919d425e9c3809f0358c741e01159d2db1604775f69888171dcc8943"
     },
     {
+      "name": "py-console",
+      "repo": "r4d1um/setup",
+      "version": "1.0.0",
+      "sha256": "2046b70aa0d96b099e4f6f9894cdaac4b04838b8a83552229d0f99d5a8af4756"
+    },
+    {
       "name": "r4setup",
       "repo": "r4d1um/setup",
-      "version": "1.0.1",
-      "sha256": "8bc053b473251a83ec0a54b8e934af9a0ffdb5dc4664088302cf04fea59db7b2"
+      "version": "1.1.0",
+      "sha256": "90a2ed13d8f2a0125c1577b719c5110c5361ce14e89e969b9c35160a88de7d6c"
     }
   ]
 }

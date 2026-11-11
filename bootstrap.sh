@@ -7,8 +7,8 @@
 #     | R4SETUP_REF=<tag> sh -s -- avr-gcc fakes          # what tools/session-setup.sh does
 #   ./bootstrap.sh avr-gcc                                 # from a checkout: its manifest.json
 set -eu
-TOOL_VERSION=1.0.1   # pinned by the toolchains workflow
-TOOL_SHA256=8bc053b473251a83ec0a54b8e934af9a0ffdb5dc4664088302cf04fea59db7b2
+TOOL_VERSION=1.1.0   # pinned by the toolchains workflow
+TOOL_SHA256=90a2ed13d8f2a0125c1577b719c5110c5361ce14e89e969b9c35160a88de7d6c
 REPO=r4d1um/setup
 
 case "$(uname -s)/$(uname -m)" in
