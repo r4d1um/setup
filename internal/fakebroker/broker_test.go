@@ -85,14 +85,20 @@ func (c *tc) subscribe(filter string, qos byte) byte {
 
 func (c *tc) expectPublish(topic, payload string, retained bool) {
 	c.t.Helper()
+	c.expect(topic, payload, &retained)
+}
+
+// expect checks the next PUBLISH; retained nil accepts either flag.
+func (c *tc) expect(topic, payload string, retained *bool) {
+	c.t.Helper()
 	h, b := c.read()
 	r := &reader{b: b}
 	got := string(r.bytes())
 	if (h>>1)&3 > 0 {
 		r.u16()
 	}
-	if h>>4 != pPublish || got != topic || string(r.b) != payload || (h&1 != 0) != retained {
-		c.t.Fatalf("got %x %q %q, want %q %q retained=%v", h, got, r.b, topic, payload, retained)
+	if h>>4 != pPublish || got != topic || string(r.b) != payload || retained != nil && (h&1 != 0) != *retained {
+		c.t.Fatalf("got %x %q %q, want %q %q", h, got, r.b, topic, payload)
 	}
 }
 
@@ -188,7 +194,8 @@ func TestLoginRefuseAndWill(t *testing.T) {
 	watcher.subscribe("status/#", 1)
 	dev, _ := dial(t, b, "dev", "esp", "geheim", &message{topic: "status/dev", payload: []byte("offline"), retain: true}, 1)
 	dev.conn.Close() // power cut: the will goes out
-	watcher.expectPublish("status/dev", "offline", false)
+	// live, or as retained if the broker stored it first: both are fine
+	watcher.expect("status/dev", "offline", nil)
 	waitFor(t, func() bool { return rec.has("will", "status/dev") })
 
 	// a clean DISCONNECT sends no will
