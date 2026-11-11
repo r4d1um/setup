@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 source "$(dirname "$0")/../common.sh"
 dir=${1:?usage: test.sh DIR}
 tmp=$(mktemp -d)

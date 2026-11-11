@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Package fakebroker is a small MQTT 3.1.1 broker for tests: CONNECT with an
 // optional login, PUBLISH QoS 0/1/2, retained messages, SUBSCRIBE with + and #
 // (granted QoS at most 1), UNSUBSCRIBE, keep alive, last will, clean disconnect.

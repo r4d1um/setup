@@ -1,4 +1,5 @@
 # shellcheck shell=bash disable=SC2034  # name/version/root are used by the scripts sourcing this
+# SPDX-License-Identifier: MIT
 # Sourced by toolchains/<name>/build.sh and test.sh (also from r4d1um/setup-private,
 # which checks this repo out): short glue only, the logic lives in cmd/r4build.
 #   build.sh OUTDIR   -> OUTDIR/<name>-<version>-linux-amd64.tar.gz (+ .sha256, extra assets)

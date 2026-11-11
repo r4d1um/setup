@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # Python tools for terminal pictures and shell checks (docker32bit-netbook's console/preview.py
 # and its checks): pyte + wcwidth, Pillow (one tree for CPython 3.11–3.13: the extension
 # modules carry the version in their names), pyflakes (tools/fix-imports.py) and shellcheck

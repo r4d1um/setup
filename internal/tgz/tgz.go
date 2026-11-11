@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Package tgz packs a directory into a reproducible .tar.gz and unpacks one
 // safely (no paths or links that leave the target directory).
 package tgz

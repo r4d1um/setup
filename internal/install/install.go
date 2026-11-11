@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Package install puts toolchains from the manifest into place: download only
 // what's missing, check the SHA256, unpack under a temporary name and rename,
 // then link the commands into a bin directory that's on PATH.

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # arm-none-eabi GCC 13.2 with newlib (+ nano) and libstdc++ from Ubuntu 24.04, relocatable;
 # the same compiler the netbook's pico-builder uses (Pico SDK, C and C++).
 source "$(dirname "$0")/../common.sh"

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 source "$(dirname "$0")/../common.sh"
 dir=${1:?usage: test.sh DIR}
 tmp=$(mktemp -d)
@@ -21,3 +22,6 @@ wait "$boot" || true
 cmp -n "$(stat -c %s "$tmp/blink.bin")" "$tmp/blink.bin" "$tmp/image"  # avrdude pads to full pages
 cores=$("$dir/bin/simavr" --list-cores 2>&1 || true)
 grep -q atmega328p <<<"$cores"
+# every bundled host library has its package, source and copyright (LGPL/GPL)
+grep -q '^libmpc3:amd64 .*https://launchpad.net/ubuntu/+source/mpclib3/' "$dir/SOURCES.txt"
+test -s "$dir/share/doc/libmpc3/copyright"

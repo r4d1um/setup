@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
 # Installs r4d1um's prebuilt toolchains: fetches the r4setup tool (version and SHA256 pinned
 # below), which downloads only what's missing, checks every checksum and links the commands
 # into ~/.local/bin. Which toolchain lives in which repo is in manifest.json.

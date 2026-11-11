@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // fake-mqtt-broker is an MQTT 3.1.1 broker for tests that logs every event as one
 // JSON line (UTC times), so a test can check what a device or service sent.
 //

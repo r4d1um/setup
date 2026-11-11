@@ -1,9 +1,13 @@
+// SPDX-License-Identifier: MIT
+
 // r4build holds the logic the toolchains/*/build.sh scripts share (they stay short glue).
 //
 //	r4build plan   -repo r4d1um/setup -dir toolchains     # JSON list of toolchains whose release is missing
 //	r4build debs   -root DIR pkg=version...              # Ubuntu packages, unpacked relocatable into DIR
 //	r4build wheels -root DIR -python 3.11,3.12 pkg==version...  # PyPI wheels, unpacked into DIR/python, DIR/bin
 //	r4build bundle -root DIR                             # copy host-only libraries in, set $ORIGIN RUNPATHs
+//	                                                     # (+ their Ubuntu package and copyright in SOURCES.txt)
+//	r4build arduino-sources -root DIR -packages DIR [-cli V]  # SOURCES.txt + licence texts for Arduino tools
 //	r4build pack   -name N -version V -root DIR -out OUT # OUT/<name>-<version>-linux-amd64.tar.gz (+ .sha256)
 //	r4build unpack -asset FILE -dir DIR                  # for the smoke tests
 package main
@@ -24,13 +28,14 @@ import (
 	"github.com/r4d1um/setup/internal/fetch"
 	"github.com/r4d1um/setup/internal/install"
 	"github.com/r4d1um/setup/internal/manifest"
+	"github.com/r4d1um/setup/internal/sources"
 	"github.com/r4d1um/setup/internal/tgz"
 	"github.com/r4d1um/setup/internal/wheel"
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		fail(fmt.Errorf("usage: r4build plan|debs|wheels|bundle|pack|unpack (see cmd/r4build/main.go)"))
+		fail(fmt.Errorf("usage: r4build plan|debs|wheels|bundle|arduino-sources|pack|unpack (see cmd/r4build/main.go)"))
 	}
 	fs := flag.NewFlagSet(os.Args[1], flag.ExitOnError)
 	var err error
@@ -53,9 +58,18 @@ func main() {
 		root := fs.String("root", "", "toolchain tree")
 		fs.Parse(os.Args[2:])
 		var host elfdeps.HostLookup
+		var copied []string
 		if host, err = elfdeps.Ldconfig(); err == nil {
-			_, err = elfdeps.Bundle(*root, host, logf)
+			if copied, err = elfdeps.Bundle(*root, host, logf); err == nil {
+				err = bundleSources(*root, host, copied)
+			}
 		}
+	case "arduino-sources":
+		root := fs.String("root", "", "toolchain tree (SOURCES.txt and share/ go here)")
+		packages := fs.String("packages", "", "Arduino packages directory inside the tree")
+		cli := fs.String("cli", "", "arduino-cli version, if the tree has arduino-cli itself")
+		fs.Parse(os.Args[2:])
+		err = arduinoSources(*root, *packages, *cli)
 	case "pack":
 		name := fs.String("name", "", "toolchain name")
 		version := fs.String("version", "", "toolchain version")
@@ -151,8 +165,8 @@ func debs(root string, pkgs []string) error {
 		return fmt.Errorf("asked for %d packages, got %d .deb files", len(pkgs), len(files))
 	}
 	stage := filepath.Join(tmp, "stage")
-	var sources bytes.Buffer
-	sources.WriteString("Unpacked from these Ubuntu 24.04 (noble) packages; their source code is at the links.\n\n")
+	var srcTxt bytes.Buffer
+	srcTxt.WriteString("Unpacked from these Ubuntu 24.04 (noble) packages; their source code is at the links.\n\n")
 	sort.Strings(files)
 	for _, f := range files {
 		if out, err := exec.Command("dpkg-deb", "-x", f, stage).CombinedOutput(); err != nil {
@@ -169,13 +183,10 @@ func debs(root string, pkgs []string) error {
 			}
 		}
 		src, srcVer := fields["Source"], fields["Version"]
-		if src == "" {
-			src = fields["Package"]
-		}
 		if s, v, ok := strings.Cut(src, " ("); ok { // "gcc-avr (1:7.3.0...)"
 			src, srcVer = s, strings.TrimSuffix(v, ")")
 		}
-		fmt.Fprintf(&sources, "%s %s  https://launchpad.net/ubuntu/+source/%s/%s\n", fields["Package"], fields["Version"], src, srcVer)
+		fmt.Fprintln(&srcTxt, sources.DebLine(fields["Package"], fields["Version"], src, srcVer))
 	}
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		return err
@@ -203,7 +214,7 @@ func debs(root string, pkgs []string) error {
 			os.RemoveAll(d)
 		}
 	}
-	return os.WriteFile(filepath.Join(root, "SOURCES.txt"), sources.Bytes(), 0o644)
+	return os.WriteFile(filepath.Join(root, "SOURCES.txt"), srcTxt.Bytes(), 0o644)
 }
 
 // wheels downloads binary wheels (exact versions, no dependencies: list them all) from PyPI

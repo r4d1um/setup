@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
 # arduino-cli + its builtin tools (ctags, serial/mdns discovery, serial monitor) and the board
 # and library indexes, so compiling needs nothing from downloads.arduino.cc. The cores come as their own
 # toolchains (arduino-avr, arduino-esp8266, ...); r4setup links everything into one data
@@ -9,6 +10,8 @@ root=$(mktemp -d)
 tmp=$(mktemp -d)
 mkdir -p "$root/bin" "$root/libexec" "$root/data"
 "$here/fetch.sh" "$root/libexec"
+mkdir -p "$root/share/doc/arduino-cli"
+mv "$root/libexec/LICENSE.txt" "$root/share/doc/arduino-cli/"
 export ARDUINO_DIRECTORIES_DATA=$root/data ARDUINO_DIRECTORIES_DOWNLOADS=$tmp/dl ARDUINO_DIRECTORIES_USER=$tmp/user
 "$root/libexec/arduino-cli" core update-index
 "$root/libexec/arduino-cli" lib update-index        # else every start tries to download it
@@ -25,5 +28,7 @@ export ARDUINO_DIRECTORIES_DOWNLOADS="${ARDUINO_DIRECTORIES_DOWNLOADS:-$data/sta
 exec "$here/../libexec/arduino-cli" "$@"
 SH
 chmod 0755 "$root/bin/arduino-cli"
+# GPL: SOURCES.txt with the source of every tool, licence texts in share/licenses
+r4build arduino-sources -root "$root" -packages "$root/data/packages" -cli "${version%-r*}"
 layout '{"path":["bin"],"links":{"arduino/package_index.json":"data/package_index.json","arduino/library_index.json":"data/library_index.json","arduino/packages/builtin":"data/packages/builtin"}}'
 r4build pack -name "$name" -version "$version" -root "$root" -out "$out"

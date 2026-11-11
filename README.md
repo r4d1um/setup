@@ -76,6 +76,12 @@ Public or private? Public when everything in it is under a license that allows
 redistribution (GPL & co. with the source pointer in `SOURCES.txt` / the sources asset).
 Unclear licence, vendor blobs or anything sensitive: private.
 
+Every archive carries a `SOURCES.txt` (where the source of each part is) and the licence texts
+(`share/licenses/`, `share/doc/<package>/copyright`). `r4build debs`, `wheels`, `bundle` and
+`arduino-sources` write them; an Arduino tool without a rule in
+[`internal/sources`](internal/sources/sources.go) or a bundled library no Ubuntu package
+owns stops the build.
+
 ## Layout
 
 ```
@@ -84,7 +90,13 @@ manifest.json           name -> repo, version, sha256 (written by the workflow)
 cmd/r4setup             installer: install, list, prefix, pin
 cmd/r4build             build helper: plan, debs, bundle, pack, unpack
 cmd/fake-mqtt-broker    the MQTT fake
-internal/               manifest, fetch, tgz, install, elfdeps, fakebroker (each with tests)
+internal/               manifest, fetch, tgz, install, elfdeps, fakebroker, wheel, sources (each with tests)
 fakes/python/r4fakes    Python fakes
 toolchains/<name>/      VERSION, build.sh, test.sh (+ defconfig for the cross GCCs)
 ```
+
+## License
+
+The code in this repo (installer, build helper, fakes, scripts) is [MIT](LICENSE).
+The toolchains in the releases keep their own licences (GPL, LGPL, BSD, …): see
+`SOURCES.txt` and the licence files inside each archive.

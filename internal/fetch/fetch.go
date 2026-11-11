@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Package fetch downloads release assets and manifests from GitHub: public
 // assets over plain HTTPS, private ones with the gh CLI (its login or GH_TOKEN).
 package fetch

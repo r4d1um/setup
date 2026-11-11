@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Package wheel unpacks Python wheels into a toolchain tree without pip:
 //
 //	<name>.data/scripts/X           -> bin/X (executable)
