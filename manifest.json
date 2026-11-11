@@ -1,4 +1,59 @@
 {
   "schema": 1,
-  "toolchains": []
+  "toolchains": [
+    {
+      "name": "aarch64-linux-gnu",
+      "repo": "r4d1um/setup",
+      "version": "12.5.0-glibc2.36-r1",
+      "sha256": "d7c604b2a3de0e572644e05fe975d74fb12eb6f97b5f1e6f1178d09b023c58fe"
+    },
+    {
+      "name": "arduino-avr",
+      "repo": "r4d1um/setup",
+      "version": "1.8.6-r1",
+      "sha256": "c0e44e062032c6775c50c49924a47b80bf9b4d87a30b174bbb8399e8bca60c27"
+    },
+    {
+      "name": "arduino-cli",
+      "repo": "r4d1um/setup",
+      "version": "1.6.0-r1",
+      "sha256": "7624301a61bfcaacc49430e1d98a5dda5e9e1b91a6b12f34f99e6da5f5f74d14"
+    },
+    {
+      "name": "arm-linux-gnueabihf",
+      "repo": "r4d1um/setup",
+      "version": "12.5.0-glibc2.36-r1",
+      "sha256": "ff6d7cda73cd69193073f1e00b8bc643149fd644a9c1d094be4c1654adfc80bb"
+    },
+    {
+      "name": "arm-none-eabi",
+      "repo": "r4d1um/setup",
+      "version": "13.2.rel1-r1",
+      "sha256": "f623b55cc46bea285bce781aac3f3bf1abadeb9f7ff811625f23bae1b90d5bfb"
+    },
+    {
+      "name": "avr-gcc",
+      "repo": "r4d1um/setup",
+      "version": "7.3.0-r1",
+      "sha256": "a949fd9d39a628e3b1ddc80f759b55c2b324aa3a022f35d796aa471a0170103f"
+    },
+    {
+      "name": "fakes",
+      "repo": "r4d1um/setup",
+      "version": "1.0.0",
+      "sha256": "379050d74c533666c5aaf7ea299840c2c9bf2df29a447c36d0d761711b6d841d"
+    },
+    {
+      "name": "i686-linux-gnu",
+      "repo": "r4d1um/setup",
+      "version": "12.5.0-glibc2.36-r1",
+      "sha256": "d0cab3c3919d425e9c3809f0358c741e01159d2db1604775f69888171dcc8943"
+    },
+    {
+      "name": "r4setup",
+      "repo": "r4d1um/setup",
+      "version": "1.0.0",
+      "sha256": "dd020e975017d97ecec75f65a162e8278d80d15047303b06a16864b13dfc764d"
+    }
+  ]
 }
