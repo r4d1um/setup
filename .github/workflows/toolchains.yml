@@ -99,23 +99,25 @@ jobs:
           pattern: pin-*
           merge-multiple: true
           path: pins
-      - name: Pin the new releases in manifest.json (and bootstrap.sh)
+      - name: Pin the new releases in manifest.json (and bootstrap.sh), on the newest main
         run: |
           shopt -s nullglob
-          for f in pins/*.pin; do
-            read -r name version sha < "$f"
-            go run ./cmd/r4setup pin -manifest manifest.json -name "$name" -repo "$GITHUB_REPOSITORY" -version "$version" -sha "$sha"
-            if [[ "$name" == r4setup ]]; then
-              sed -i "s/^TOOL_VERSION=[^ ]*/TOOL_VERSION=$version/; s/^TOOL_SHA256=.*/TOOL_SHA256=$sha/" bootstrap.sh
-            fi
-          done
-          rm -rf pins
-          git diff --stat
-      - name: Commit
-        run: |
-          git diff --quiet && exit 0
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -qam "Pin new toolchain releases [skip ci]"
-          for _ in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          mv pins "$RUNNER_TEMP/pins"
+          # apply the pins to the newest main and push; if main moved meanwhile, start over
+          for attempt in 1 2 3 4 5; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            for f in "$RUNNER_TEMP"/pins/*.pin; do
+              read -r name version sha < "$f"
+              go run ./cmd/r4setup pin -manifest manifest.json -name "$name" -repo "$GITHUB_REPOSITORY" -version "$version" -sha "$sha"
+              if [[ "$name" == r4setup ]]; then
+                sed -i "s/^TOOL_VERSION=[^ ]*/TOOL_VERSION=$version/; s/^TOOL_SHA256=.*/TOOL_SHA256=$sha/" bootstrap.sh
+              fi
+            done
+            git diff --quiet && exit 0
+            git commit -qam "Pin new toolchain releases [skip ci]"
+            git push -q origin HEAD:main && exit 0
+            sleep $((attempt * 5))
+          done
           exit 1
