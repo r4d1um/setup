@@ -31,6 +31,8 @@ curl -fsSL https://raw.githubusercontent.com/r4d1um/setup/v1.0.0/bootstrap.sh \
 | `arduino-cli` | arduino-cli + builtin tools (ctags, discoveries, monitor) + board index | public |
 | `arduino-avr` | Arduino AVR core with Arduino's avr-gcc/avrdude | public |
 | `arduino-esp8266` | ESP8266 core (Espressif SDK blobs) | **private** |
+| `xtensa-lx106-elf` | ESP8266 GCC 10.3 (esp-quick-toolchain 3.1.0, the compiler of core 3.1.2), no SDK: for libraries' ESP8266 `.a` | public |
+| `xtensa-esp32-elf` | ESP32 GCC 8.4 (Espressif esp-2021r2-patch5, the compiler of core 2.0.17), no SDK: for libraries' ESP32 `.a`, links with core 2.x and 3.x | public |
 | `cahute` | Cahute (p7, p7os, CaS) for the fx-9860G, libusb/SDL2 bundled | public |
 | `aarch64-linux-gnu` | cross GCC 12.5, glibc 2.36: Pi 3/4/5 with 64-bit Debian 12 / Pi OS bookworm | public |
 | `arm-linux-gnueabihf` | cross GCC 12.5, glibc 2.36, **ARMv6** + VFP hard float: Pi Zero / Pi 1 (and every later Pi, 32-bit) | public |

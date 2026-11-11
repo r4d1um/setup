@@ -31,3 +31,10 @@ otherwise kill an hour-long cross build that has to be redone anyway.
 tree; Pillow's extension modules carry the Python version in their names, so one archive serves
 CPython 3.11 (the netbook's) to 3.13. r4setup writes a `.pth` into each listed Python's user site
 instead of asking projects to set PYTHONPATH, which doesn't survive between shell calls.
+
+**2026-11-11 — Bare Xtensa GCCs public, next to the private cores.** The IoT libraries
+(r4d1um/iot-lib-public, a public repo whose CI can't read setup-private) ship an Arduino-free
+core as a prebuilt `.a` per target. For the ESP8266 and ESP32 that needs only the compiler, not the
+Espressif SDK, so `xtensa-lx106-elf` and `xtensa-esp32-elf` are public (GPL, source pointers in
+SOURCES.txt). ESP8266: exactly the core 3.1.2 compiler. ESP32: GCC 8.4 of core 2.0.17 (the netbook's
+newest 32-bit core) on purpose; objects from the older GCC also link with core 3.x's GCC 14.
