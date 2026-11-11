@@ -5,3 +5,4 @@ dir=${1:?usage: test.sh DIR}
 ARDUINO_DIRECTORIES_DATA=$dir/data "$dir/bin/arduino-cli" core list
 ctags=("$dir/data/packages/builtin/tools/ctags/"*/ctags)
 "${ctags[0]}" --version | grep -q "Exuberant Ctags"
+test -s "$dir/data/library_index.json"
