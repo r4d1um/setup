@@ -1,0 +1,121 @@
+name: toolchains
+
+# Builds every toolchains/<name> whose release "<name>-<version>" doesn't exist yet, tests it,
+# attaches it to a new release and pins its SHA256 in manifest.json (bootstrap.sh for r4setup).
+# Nothing is rebuilt while its VERSION stays the same.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "toolchains/**"
+      - "cmd/**"
+      - "internal/**"
+      - "fakes/**"
+      - "go.mod"
+      - ".github/workflows/toolchains.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: toolchains
+  # a cross GCC takes about an hour: a newer push waits instead of throwing that work away
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      jobs: ${{ steps.plan.outputs.jobs }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Tests (the build tools must work before anything is built with them)
+        run: go vet ./... && go test ./...
+      - id: plan
+        name: Which toolchains need a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          jobs=$(go run ./cmd/r4build plan -repo "$GITHUB_REPOSITORY" -dir toolchains)
+          echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
+          echo "to build: $jobs"
+
+  build:
+    needs: plan
+    if: needs.plan.outputs.jobs != '[]'
+    name: ${{ matrix.name }} ${{ matrix.version }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: ${{ matrix.timeout }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.jobs) }}
+    env:
+      OUT: ${{ github.workspace }}/../out
+      TAG: ${{ matrix.name }}-${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Build
+        run: toolchains/${{ matrix.name }}/build.sh "$OUT"
+      - name: Smoke test of the packed archive
+        run: |
+          go run ./cmd/r4build unpack -asset "$OUT/$TAG-linux-amd64.tar.gz" -dir "$RUNNER_TEMP/unpacked"
+          toolchains/${{ matrix.name }}/test.sh "$RUNNER_TEMP/unpacked"
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" "$OUT"/* --title "$TAG" --notes "Built by ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} from toolchains/${{ matrix.name }}. Install: bootstrap.sh ${{ matrix.name }}"
+      - name: Hand the checksum to the pin job
+        run: |
+          mkdir -p "$RUNNER_TEMP/pin"
+          echo "${{ matrix.name }} ${{ matrix.version }} $(cut -d' ' -f1 "$OUT/$TAG-linux-amd64.tar.gz.sha256")" > "$RUNNER_TEMP/pin/${{ matrix.name }}.pin"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pin-${{ matrix.name }}
+          path: ${{ runner.temp }}/pin/
+          retention-days: 1
+
+  pin:
+    needs: [plan, build]
+    if: always() && needs.plan.outputs.jobs != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: pin-*
+          merge-multiple: true
+          path: pins
+      - name: Pin the new releases in manifest.json (and bootstrap.sh)
+        run: |
+          shopt -s nullglob
+          for f in pins/*.pin; do
+            read -r name version sha < "$f"
+            go run ./cmd/r4setup pin -manifest manifest.json -name "$name" -repo "$GITHUB_REPOSITORY" -version "$version" -sha "$sha"
+            if [[ "$name" == r4setup ]]; then
+              sed -i "s/^TOOL_VERSION=[^ ]*/TOOL_VERSION=$version/; s/^TOOL_SHA256=.*/TOOL_SHA256=$sha/" bootstrap.sh
+            fi
+          done
+          rm -rf pins
+          git diff --stat
+      - name: Commit
+        run: |
+          git diff --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -qam "Pin new toolchain releases [skip ci]"
+          for _ in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          exit 1

@@ -1,0 +1,34 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md"]
+  pull_request:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: go vet ./... && go test -race ./...
+      - name: shellcheck
+        run: shellcheck -x bootstrap.sh toolchains/common.sh toolchains/*/*.sh
+      - name: manifest.json is valid
+        run: go run ./cmd/r4setup list -manifest manifest.json
+      - name: bootstrap.sh installs the fakes end to end
+        run: |
+          if grep -q '^TOOL_VERSION=0.0.0' bootstrap.sh || ! grep -q '"name": "fakes"' manifest.json; then
+            echo "r4setup or fakes not released yet"; exit 0
+          fi
+          ./bootstrap.sh fakes
+          fake-esptool --port /dev/null flash_id | grep -q "flash size"
+          ./bootstrap.sh fakes 2>&1 | grep -q "already installed"

@@ -1,0 +1,17 @@
+# Raspberry Pi Zero / Zero W / 1 (ARM1176, ARMv6 + VFP, hard float) with a 32-bit OS (Pi OS bookworm):
+# glibc 2.36. Runs on every later Pi with a 32-bit OS too.
+CT_ARCH_ARM=y
+CT_ARCH_CPU="arm1176jzf-s"
+CT_ARCH_FPU="vfp"
+CT_ARCH_FLOAT_HW=y
+CT_CONFIG_VERSION="4"
+CT_OMIT_TARGET_VENDOR=y
+CT_KERNEL_LINUX=y
+CT_LINUX_V_6_1=y
+CT_BINUTILS_V_2_40=y
+CT_GLIBC_V_2_36=y
+CT_GCC_V_12=y
+CT_CC_LANG_CXX=y
+CT_SAVE_TARBALLS=y
+# CT_LOG_PROGRESS_BAR is not set
+# CT_PREFIX_DIR_RO is not set
